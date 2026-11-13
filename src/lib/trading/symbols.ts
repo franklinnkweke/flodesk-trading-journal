@@ -51,12 +51,13 @@ const ALIASES: Record<string, string> = {
 export function normalizeSymbol(raw: string, known: string[] = DEFAULT_SYMBOL_SETTINGS.map((s) => s.symbol)): string {
   const up = raw.trim().toUpperCase();
   const core = up.replace(/[^A-Z0-9]/g, "");
-  for (const [alias, target] of Object.entries(ALIASES)) {
-    if (core === alias || core.startsWith(alias) && !known.some((k) => core.startsWith(k))) return target;
-  }
-  const sorted = [...known].sort((a, b) => b.length - a.length);
-  const hit = sorted.find((k) => core.startsWith(k));
-  return hit ?? up.split(/[.\s_-]/)[0];
+  const hit = [...known].sort((a, b) => b.length - a.length).find((k) => core.startsWith(k));
+  if (hit) return hit;
+  const alias = Object.keys(ALIASES)
+    .sort((a, b) => b.length - a.length)
+    .find((a) => core.startsWith(a));
+  if (alias) return ALIASES[alias];
+  return up.split(/[.\s_-]/)[0];
 }
 
 export function findSetting(settings: SymbolSetting[], symbol: string): SymbolSetting | undefined {
